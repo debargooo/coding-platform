@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { CiMenuFries } from "react-icons/ci";
 import { RxCross1 } from "react-icons/rx";
+import { useAuth } from '../../contexts/AuthContext'; // Import the Auth context
 
 const Navbar = () => {
+  const { username, logout } = useAuth(); // Get username and logout function from context
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <>
@@ -29,11 +38,20 @@ const Navbar = () => {
             <Link to="/contact" className="text-white">
               Contact
             </Link>
-            <Link to="/login" className="text-black py-[0.5rem] px-[1rem] font-bold text-base border border-[3px solid rgb(252, 70, 100)] bg-white hover:bg-transparent hover:text-white duration-150 ">
-              Login
-            </Link>
+            <div className="flex items-center">
+              {username ? (
+                <span className="mr-4">Hello, {username}!</span>
+              ) : (
+                <Link to="/login" className="text-black py-[0.5rem] px-[1rem] font-bold text-base border border-[3px solid rgb(252, 70, 100)] bg-white hover:bg-transparent hover:text-white duration-150 ">Login</Link>
+              )}
+              {username && (
+                <button onClick={handleLogout} className="text-black py-[0.5rem] px-[1rem] font-bold text-base border border-[3px solid rgb(252, 70, 100)] bg-white hover:bg-transparent hover:text-white duration-150 ">
+                  Logout
+                </button>
+              )}
+            </div>
           </div>
-          
+
           {/* Mobile Menu Icon */}
           <div className="xl:hidden flex items-center space-x-2 px-8">
             <button 
@@ -76,8 +94,8 @@ const Navbar = () => {
             Contact
           </Link>
           <Link to="/login" className="text-black py-[0.5rem] px-[1rem] font-bold text-base border border-[3px solid rgb(252, 70, 100)] bg-white hover:bg-transparent hover:text-white duration-150 ">
-              Login
-            </Link>
+            Login
+          </Link>
         </div>
       </div>
 

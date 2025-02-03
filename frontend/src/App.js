@@ -5,9 +5,10 @@ import Problems from "./pages/Problems/Problems";
 import SingleProblem from "./pages/Problems/SingleProblem";
 import Login from "./pages/Login/Login";
 import SignUp from "./pages/SignUp/SignUp";
+import { AuthProvider } from "./contexts/AuthContext";
 function App() {
   return (
-   
+   <AuthProvider>
     <Router>
       <Navbar/>
       <Routes>
@@ -19,7 +20,7 @@ function App() {
         {/* Add other routes here */}
       </Routes>
     </Router>
-
+  </AuthProvider>
   );
 }
 

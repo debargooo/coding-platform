@@ -22,11 +22,13 @@ const SignUp = () => {
         password,
       });
       
-
       if (response.status === 201) {
-       toast.success("User registered successfully!");
-        navigate('/')
+        toast.success("User registered successfully!");
+        setTimeout(() => {
+          navigate('/');
+        }, 2000); 
       }
+      
       
     } catch (error) {
       toast.error(error.response?.data.error || error.message)

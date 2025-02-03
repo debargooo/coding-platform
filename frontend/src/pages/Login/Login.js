@@ -2,17 +2,50 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { LuEye,LuEyeClosed } from "react-icons/lu";
+import { useAuth } from '../../contexts/AuthContext';
+
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const {login} = useAuth();
+
+  const handleEyeBtn = () => {
+    setShowPassword((prev) => !prev); 
+  };
+
+  
 
   // Handle form submission
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent form from reloading the page
+    e.preventDefault();
+  
+    try {
+      const response = await axios.post("http://localhost:8080/login", {
+        email,
+        password,
+      });
+  
+      if (response.status === 200) {
+        const token = response.data.token;
+        const username = response.data.username;
+  
+        // Use the login function from context
+        login(username, token);
+  
+        toast.success("Login successful!");
+        navigate("/");  // Redirect to homepage or dashboard
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Login failed. Please try again.");
+    }
   };
+  
+  
+  
 
   return (
     <div className="min-h-[calc(100vh-106px)] flex items-center justify-center w-full bg-[rgba(25,25,25,1)]">
@@ -35,12 +68,13 @@ const Login = () => {
               required
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
               Password
             </label>
+           
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               className="shadow-sm rounded-md w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Enter your password"
@@ -48,6 +82,15 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <button
+                      type="button"
+                      onClick={handleEyeBtn}
+                      className="absolute top-10 right-3 text-xl cursor-pointer text-gray-500"
+                    >
+                      {showPassword ? <LuEye /> : <LuEyeClosed />}
+            </button>
+          
+            
             <a
               href="#"
               className="text-xs text-gray-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
