@@ -11,9 +11,9 @@ require('dotenv').config();
 const app = express();
 const PORT = 8080;
 const db = require("./db/db"); // Import the MySQL database connection
-const allProblemsUrl = "https://alfa-leetcode-api.onrender.com/problems";
+const allProblemsUrl = "http://localhost:3000/problems";
 const singleProblemUrl =
-  "https://alfa-leetcode-api.onrender.com/select?titleSlug=";
+  "http://localhost:3000/select?titleSlug=";
 
 
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { FaCode, FaVideo, FaChartLine, FaUsers } from 'react-icons/fa';
 import bgImg from '../../assests/bgImg.jpg'
 import { Link,  useNavigate } from 'react-router-dom';
+import { useAuth } from "../../contexts/AuthContext";
 import { useState,useEffect } from 'react';
 import axios from 'axios';
 
@@ -11,38 +12,31 @@ const popularCourses = [
     id: 1,
     title: 'React for Beginners',
     description: 'Learn the fundamentals of React.js and build dynamic web applications.',
-    image: 'https://via.placeholder.com/400x200', // Replace with actual image URLs
+    image: 'https://cdn.hashnode.com/res/hashnode/image/upload/v1603797780927/S6loCK6fY.png', // Replace with actual image URLs
   },
   {
     id: 2,
     title: 'Advanced Algorithms',
     description: 'Master complex algorithms and improve your problem-solving skills.',
-    image: 'https://via.placeholder.com/400x200',
+    image: 'https://www.devopsschool.com/blog/wp-content/uploads/2021/06/Complete-Tutorials-of-Introduction-to-Algorithm.png',
   },
   {
     id: 3,
     title: 'Full-Stack Development',
     description: 'Become a full-stack developer with hands-on projects and tutorials.',
-    image: 'https://via.placeholder.com/400x200',
+    image: 'https://markovate.com/wp-content/uploads/2022/08/top-MERN-Stack.webp',
   },
 ];
 
 const Home = () => {
   const navigate = useNavigate();
+  const { authToken } = useAuth(); 
 
-  const handleStartCoding = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/auth/status", {
-        withCredentials: true,
-      });
-      if (response.data.authenticated) {
-        navigate("/problems");
-      } else {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error.message);
-      navigate("/login");
+
+  const handleStartCoding = (e) => {
+    if (!authToken) {
+      e.preventDefault();  // Prevent navigation
+      navigate("/login");  // Redirect to login
     }
   };
 
@@ -59,7 +53,7 @@ const Home = () => {
         </p>
         <div className="flex justify-center space-x-4">
           <Link
-            to="/problems"
+            to={authToken ? "/problems" : "/login"}
             className="bg-white text-blue-600 font-semibold py-3 px-6 rounded shadow hover:bg-gray-100 transition"
             onClick={handleStartCoding} 
           >
@@ -226,12 +220,12 @@ const Home = () => {
             Start your journey towards becoming a coding expert today.
           </p>
           <div className="flex justify-center space-x-4">
-            <a
-              href="#"
+            <Link
+              to="/signup"
               className="bg-blue-600 text-white font-semibold py-3 px-6 rounded shadow hover:bg-blue-700 transition"
             >
               Sign Up Free
-            </a>
+            </Link>
             <a
               href="#"
               className="bg-transparent border border-blue-600 text-blue-600 font-semibold py-3 px-6 rounded hover:bg-blue-600 hover:text-white transition"

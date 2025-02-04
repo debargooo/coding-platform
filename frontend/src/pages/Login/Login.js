@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { LuEye,LuEyeClosed } from "react-icons/lu";
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -40,6 +40,7 @@ const Login = () => {
         navigate("/");  // Redirect to homepage or dashboard
       }
     } catch (error) {
+      console.log(error.response?.data?.error)
       toast.error(error.response?.data?.error || "Login failed. Please try again.");
     }
   };
@@ -124,6 +125,7 @@ const Login = () => {
           </button>
         </form>
       </div>
+      <ToastContainer className="absolute top-0 right-0" />
     </div>
   );
 };

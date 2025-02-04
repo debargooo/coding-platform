@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Editor } from '@monaco-editor/react'; // Import Monaco Editor
-import {GridLoader } from 'react-spinners'
+import { GridLoader } from 'react-spinners';
 import LanguageSelector from '../../Components/LanguageSelector/LanguageSelector';
 import { CODE_SNIPPETS } from '../../Components/constants';
 import { executeCode } from '../../redux/slices/api';
@@ -12,16 +12,10 @@ const SingleProblem = () => {
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [code, setCode] = useState(''); // State to manage the code editor content
-  const [output, setOutput] = useState(''); // State to manage the code execution output
-  const [language, setlanguage] = useState("javascript")
-  const [value, setValue] = useState("")
-
-  const onSelect = (language) => {
-    setlanguage(language);
-    setCode(CODE_SNIPPETS[language] || ""); // Set code based on language selection
-  };
-  
+  const [code, setCode] = useState(''); // State to manage code editor content
+  const [output, setOutput] = useState(''); // State to manage code execution output
+  const [testResults, setTestResults] = useState(''); // State for test case results
+  const [language, setLanguage] = useState("javascript");
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -38,59 +32,60 @@ const SingleProblem = () => {
     fetchProblem();
   }, [titleSlug]);
 
+  const onSelect = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    setCode(CODE_SNIPPETS[selectedLanguage] || ""); // Set code based on language selection
+  };
+
   const runCode = async () => {
-    // If no code is written, use the default value (boilerplate)
-    const codeToExecute = code.trim() === '' ? CODE_SNIPPETS[language] : code;
+    if (!problem || !problem.exampleTestcases) {
+      setOutput("No test cases available");
+      return;
+    }
   
-    console.log("Current Code:", codeToExecute);  // Log the code being executed
+    const codeToExecute = code.trim() === '' ? CODE_SNIPPETS[language] : code;
+    console.log("Current Code:", codeToExecute);
   
     try {
-      const testCases = JSON.parse(problem.exampleTestcases || '[]');
-      let results = [];
-      for (let i = 0; i < testCases.length; i++) {
-        const input = testCases[i].input;
-        const expectedOutput = testCases[i].expectedOutput;
+      const response = await executeCode(language, codeToExecute);
+      console.log("API Response Data:", response);
   
-        console.log(`Running Test Case ${i + 1}:`, input);
+      // 🛠 Fix: Ensure response.run.output exists before calling `trim()`
+      const actualOutput = response.run.output ;
+      console.log(actualOutput)
+      setOutput(actualOutput);
   
-        // Execute code with test case input
-        const response = await executeCode(language, codeToExecute, input);
-  
-        if (response && response.run && response.run.output) {
-          const actualOutput = response.run.output.trim();
-          const passed = actualOutput === expectedOutput.trim();
-  
-          results.push({
-            input,
-            expectedOutput,
-            actualOutput,
-            passed,
-          });
-        } else {
-          results.push({
-            input,
-            expectedOutput,
-            actualOutput: "Error in execution",
-            passed: false,
-          });
-        }
-      }
-     
-        setOutput(results.map((result, index) => (
-          `Test Case ${index + 1}:\n` +
-          `Input: ${result.input}\n` +
-          `Expected: ${result.expectedOutput}\n` +
-          `Actual: ${result.actualOutput}\n` +
-          `Result: ${result.passed ? "✅ Passed" : "❌ Failed"}\n\n`
-        )).join(""));
+      // ✅ Compare output with test cases
+      validateTestCases(actualOutput, problem.exampleTestcases);
     } catch (err) {
       setOutput(`Error executing code: ${err.message}`);
     }
   };
+  const validateTestCases = (actualOutput, expectedTestCases) => {
+    // If expectedTestCases is a string, split by new lines
+    if (typeof expectedTestCases === "string") {
+      expectedTestCases = expectedTestCases.split("\n");
+    }
+  
+    let accumulatedResults = ''; // Variable to store all test case results
+  
+    // Loop through each test case
+    expectedTestCases.forEach((testCase, index) => {
+      const isCorrect = actualOutput.trim() === testCase.trim();  // Compare the actual output with the expected output
+      const resultText = `Test Case ${index + 1}: Expected: "${testCase}", Got: "${actualOutput.trim()}"\nResult: ${isCorrect ? 'Passed' : 'Failed'}\n\n`;
+      
+      // Accumulate results
+      accumulatedResults += resultText;
+    });
+  
+    // After the loop, set all accumulated results in the state at once
+    setTestResults(accumulatedResults);
+  };
+  
   
   
 
-if (loading) {
+  if (loading) {
     return (
       <div className='flex justify-center items-center min-h-screen'>
         <GridLoader color='rgb(75 219 190)' />
@@ -105,14 +100,10 @@ if (loading) {
   // Helper to set difficulty color
   const getDifficultyColor = (difficulty) => {
     switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return 'text-green-500';
-      case 'medium':
-        return 'text-yellow-500';
-      case 'hard':
-        return 'text-red-500';
-      default:
-        return 'text-gray-500';
+      case 'easy': return 'text-green-500';
+      case 'medium': return 'text-yellow-500';
+      case 'hard': return 'text-red-500';
+      default: return 'text-gray-500';
     }
   };
 
@@ -131,24 +122,14 @@ if (loading) {
         <div className="flex-1">
           <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
             <h2 className="text-xl font-semibold mb-4">Problem Statement</h2>
-            <div
-              className="text-gray-800 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: problem.question }}
-            ></div>
+            <div className="text-gray-800 leading-relaxed" dangerouslySetInnerHTML={{ __html: problem.question }}></div>
           </div>
-
-         
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold">Tags:</h3>
             <div className="flex flex-wrap space-x-2">
               {problem.topicTags.map((tag) => (
-                <span
-                  key={tag.slug}
-                  className="bg-blue-100 text-blue-500 px-2 py-1 rounded-lg"
-                >
-                  {tag.name}
-                </span>
+                <span key={tag.slug} className="bg-blue-100 text-blue-500 px-2 py-1 rounded-lg">{tag.name}</span>
               ))}
             </div>
           </div>
@@ -166,16 +147,16 @@ if (loading) {
         {/* Code Editor */}
         <div className="flex-1">
           <div className="mb-6">
-            <LanguageSelector language={language} onSelect={onSelect}/>
+            <LanguageSelector language={language} onSelect={onSelect} />
             <h3 className="text-lg font-semibold">Your Code:</h3>
             <Editor
-              height="500px" // Adjust height as needed
+              height="500px"
               language={language}
               defaultValue={CODE_SNIPPETS[language]}
               theme='vs-dark'
               value={code}
-              onChange={(value) => setCode(value)} // Update state with the editor's content
-              options={{ fontSize: 14 }} // Adjust options as needed
+              onChange={(value) => setCode(value)}
+              options={{ fontSize: 14 }}
             />
             <button 
               onClick={runCode}
@@ -184,30 +165,25 @@ if (loading) {
               Run Code
             </button>
           </div>
+
           <div className="mb-6">
             <h3 className="text-lg font-semibold">Example Testcases:</h3>
-            <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">
-              {problem.exampleTestcases}
-            </pre>
+            <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">{problem.exampleTestcases}</pre>
           </div>
        
           <div className="mb-6">
             <h3 className="text-lg font-semibold">Output:</h3>
-            <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">
-              {output}
-            </pre>
+            <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">{output}</pre>
           </div>
 
-          
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold">Test Cases Result:</h3>
+            <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">{testResults}</pre>
+          </div>
         </div>
       </div>
 
-      <a
-        href={problem.link}
-        className="text-blue-500 underline"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <a href={problem.link} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
         View problem on LeetCode
       </a>
     </div>
