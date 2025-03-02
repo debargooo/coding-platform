@@ -6,6 +6,7 @@ import SingleProblem from "./pages/Problems/SingleProblem";
 import Login from "./pages/Login/Login";
 import SignUp from "./pages/SignUp/SignUp";
 import { AuthProvider } from "./contexts/AuthContext";
+import RoomManagement from "./pages/Room/RoomMangement";
 import Room from "./pages/Room/Room";
 function App() {
   return (
@@ -18,7 +19,8 @@ function App() {
         <Route path="/problems/:titleSlug" element={<SingleProblem />} />
         <Route path="/login" element={<Login/>} />
         <Route path="/signup" element={<SignUp/>} />
-        <Route path="/challenges" element={<Room/>} />
+        <Route path="/challenges" element={<RoomManagement/>} />
+        <Route path="/challenges/:roomCode" element={<Room/>} />
         {/* Add other routes here */}
       </Routes>
     </Router>
