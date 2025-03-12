@@ -1,28 +1,46 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
-// Create the context
 const AuthContext = createContext();
 
-// Create a custom hook to use the context
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [username, setUsername] = useState(localStorage.getItem("username") || null);
-  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken") || null);
+  const [username, setUsername] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+  const [loading, setLoading] = useState(true); // New loading state 🚀
+
+  useEffect(() => {
+    const token = Cookies.get("authToken");
+    const storedUsername = Cookies.get("username");
+    
+    if (token) {
+      setAuthToken(token);
+    }
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+
+    setLoading(false); // Stop loading after fetching cookies ✅
+  }, []);
 
   const login = (username, token) => {
     setUsername(username);
     setAuthToken(token);
-    localStorage.setItem("username", username);
-    localStorage.setItem("authToken", token);
+    Cookies.set("authToken", token, { expires: 7 });
+    Cookies.set("username", username, { expires: 7 });
   };
 
   const logout = () => {
     setUsername(null);
     setAuthToken(null);
-    localStorage.removeItem("username");
-    localStorage.removeItem("authToken");
+    Cookies.remove("authToken");
+    Cookies.remove("username");
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Prevents redirection before cookies load
+  }
 
   return (
     <AuthContext.Provider value={{ username, authToken, login, logout }}>

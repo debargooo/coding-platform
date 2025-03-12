@@ -20,6 +20,7 @@ const RoomManagement = () => {
       setIsAdmin(true);
     });
     socket.on("roomUpdate", ({ users }) => setUsers(users));
+    console.log(users)
     socket.on("competitionStarted", (code) => {
       if (code === roomCode) navigate(`/challenges/${roomCode}`);
     });
@@ -46,6 +47,7 @@ const RoomManagement = () => {
       return;
     }
     socket.emit("joinRoom", { username, roomCode });
+    console.log("Joining room:", roomCode, "as", username);
     setJoined(true);
   };
 

@@ -42,7 +42,10 @@ const Room = () => {
     };
 
     socket.emit("getRoomData", roomCode);
-    socket.on("roomUpdate", ({ users }) => setUsers(users));
+    socket.on("roomUpdate", ({ users }) => {
+      console.log("Updated users:", users);
+      setUsers([...users]);  
+    });
 
     fetchQuestions();
 

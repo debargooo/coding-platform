@@ -24,10 +24,10 @@ const Login = () => {
     e.preventDefault();
   
     try {
-      const response = await axios.post("http://localhost:8080/login", {
+      const response = await axios.post("http://localhost:8080/auth/login", {
         email,
         password,
-      });
+      },{ withCredentials: true });
   
       if (response.status === 200) {
         const token = response.data.token;

@@ -176,10 +176,10 @@ const SingleProblem = () => {
             <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">{output}</pre>
           </div>
 
-          <div className="mb-6">
+          {/*<div className="mb-6">
             <h3 className="text-lg font-semibold">Test Cases Result:</h3>
             <pre className="bg-gray-100 p-4 rounded-lg text-gray-800">{testResults}</pre>
-          </div>
+          </div>*/}
         </div>
       </div>
 
